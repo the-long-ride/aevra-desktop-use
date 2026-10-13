@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # The release workflow runs the same matrix before it packages anything.
+  workflow_call:
+    inputs:
+      ref:
+        description: Exact commit to validate for a release
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # The native fixture test has its own step on windows-latest.
+  AEVRA_SKIP_NATIVE_FIXTURE: "1"
+
+jobs:
+  wayland-gnome:
+    name: Native GNOME Wayland
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: node scripts/prepare-helper.mjs
+      - name: Install native compositor prerequisites
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends gnome-shell python3-gi python3-gi-cairo gir1.2-gtk-3.0 at-spi2-core dbus-x11 libwayland-dev libxkbcommon-dev
+      - uses: Swatinem/rust-cache@v2
+      - name: GNOME permission and keyboard-focus regressions
+        run: node --test vendor/aevra/helper/wayland/gnome/policy.test.mjs
+      - name: Required compositor and embedded backend acceptance
+        env:
+          AEVRA_WAYLAND_MANIFEST: ${{ github.workspace }}/Cargo.toml
+          AEVRA_WAYLAND_PACKAGE: aevra-desktop-helper
+        run: bash vendor/aevra/helper/tests/run-wayland-gnome.sh
+
+  wayland-kde:
+    name: Native KDE Wayland
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: node scripts/prepare-helper.mjs
+      - name: Install native compositor prerequisites
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends kwin-dev kwin-wayland cmake ninja-build extra-cmake-modules libdrm-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb-randr0-dev libxcb-sync-dev libxcb-xkb-dev libxcb-res0-dev python3-gi python3-gi-cairo gir1.2-gtk-3.0 at-spi2-core dbus-x11 libwayland-dev libxkbcommon-dev
+      - uses: Swatinem/rust-cache@v2
+      - name: Required compositor and embedded backend acceptance
+        env:
+          AEVRA_WAYLAND_MANIFEST: ${{ github.workspace }}/Cargo.toml
+          AEVRA_WAYLAND_PACKAGE: aevra-desktop-helper
+        run: bash vendor/aevra/helper/tests/run-wayland-kde.sh
+
+  pins:
+    name: Helper pins
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: node --test scripts/helper-overlay.test.mjs scripts/library-boundary.test.mjs scripts/release-workflows.test.mjs
+      - run: node scripts/prepare-helper.mjs
+      - run: node --test vendor/aevra/helper/tests/macos-build.test.mjs
+      - run: node scripts/check-pins.mjs
+
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {
+              os: windows-latest,
+              target: x86_64-pc-windows-msvc,
+              native_fixture: true,
+            }
+          - { os: windows-11-arm, target: aarch64-pc-windows-msvc }
+          - { os: macos-latest, target: aarch64-apple-darwin }
+          # macos-13 is retired; macos-15-intel is the x64 macOS runner.
+          - { os: macos-15-intel, target: x86_64-apple-darwin }
+          - { os: ubuntu-22.04, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu }
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          submodules: recursive
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Prepare canonical helper source
+        run: node scripts/prepare-helper.mjs
+
+      - name: Select compatible macOS SDK
+        if: runner.os == 'macOS'
+        run: node vendor/aevra/helper/setup-macos.mjs
+
+      - name: Install Linux native prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libwayland-dev libxkbcommon-dev xvfb x11-xkb-utils python3-gi gir1.2-gtk-3.0 at-spi2-core dbus-x11
+
+      # rust-toolchain.toml asks for stable with rustfmt and clippy. The
+      # dependency set needs a recent compiler, so take the latest stable.
+      - name: Install Rust
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+          rustup default stable
+          rustc --version
+
+      - uses: Swatinem/rust-cache@v2
+
+      # AX/AT-SPI semantics, ScreenCaptureKit/X11 capture and native input share
+      # the exact canonical helper overlay prepared above.
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+      - name: Native X11 capture and input
+        if: runner.os == 'Linux'
+        env:
+          AEVRA_GTK_FIXTURE: ${{ github.workspace }}/vendor/aevra/helper/tests/fixtures/portable_gtk_fixture.py
+        run: dbus-run-session -- cargo test -p aevra-desktop-helper --locked native_x11_ -- --ignored --nocapture --test-threads=1
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: MCP smoke test
+        shell: bash
+        run: |
+          bin=target/release/aevra-desktop
+          if [ "$RUNNER_OS" = "Windows" ]; then bin="$bin.exe"; fi
+          node scripts/mcp-smoke.mjs "$bin"
+
+      - name: Set up .NET 8 for the native fixture
+        if: matrix.native_fixture
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Native launcher orchestration tests
+        if: matrix.native_fixture
+        shell: pwsh
+        run: ./scripts/test-native-windows-launcher.ps1
+
+      - name: Native background control test
+        if: matrix.native_fixture
+        env:
+          AEVRA_SKIP_NATIVE_FIXTURE: ""
+        shell: pwsh
+        run: ./scripts/test-native-windows.ps1

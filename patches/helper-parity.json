@@ -1,0 +1,351 @@
+{
+  "baseRevision": "da24d727cb4bc1154d13bbd0a6292e66da7a85ef",
+  "origin": "aevra/helper canonical source; export-desktop-overlay.py",
+  "files": [
+    {
+      "path": "helper/Cargo.lock",
+      "before": "6f0158a836d77b98d8a3549c5377f15cacfbfbc82abbab17128cda505d4c32cf",
+      "after": "5dd3c17e9c2cbebb8e5799cecb95a59113cefc5f371adb14ea08be43b66f1fbf"
+    },
+    {
+      "path": "helper/Cargo.toml",
+      "before": "8cda15b9b876fcc4e37a9127a1c340f6b8526d36d2bc21cd6377d4aed7a529cf",
+      "after": "e29827f854a66871e175c3028977db45f715557473ca08b260622c1bd9079c23"
+    },
+    {
+      "path": "helper/setup-macos.mjs",
+      "before": null,
+      "after": "0357e454b85ec1fcc7849bcd39885f16ba48ae267f64b81465ae3d744d84759a"
+    },
+    {
+      "path": "helper/src/act.rs",
+      "before": "2d0983a0cba1877f4468ec48fea461ab8e24e8c45d92e51a671781b812819910",
+      "after": "a2f0f9f80c9e5b4d46d085426623546ebfae7c29a7cc6703835d4ef875ef301b"
+    },
+    {
+      "path": "helper/src/authorized_target_tests.rs",
+      "before": null,
+      "after": "d9e25853455069793ce720053f6e7831e96ab32b61a3eaafcbe153af5f570e0a"
+    },
+    {
+      "path": "helper/src/backend.rs",
+      "before": "f415c37cb2be51baf29d35c2508e868ae31cb9762fee8ad00ab9e8b3e9cfeec9",
+      "after": "2535c1a1c9526d14250946fa19a2391f7de6df5cfab8f0fc13a7a84f120738f8"
+    },
+    {
+      "path": "helper/src/background_snapshots.rs",
+      "before": "3959251d28703256d5921cf8f0e67a653dabfe270fe3a548cfc0cd9d50f8a3a0",
+      "after": "4dfaad0cd2cf535020c49519a0d81b536f66c53dead50ffa0e3014e582fda19c"
+    },
+    {
+      "path": "helper/src/capture.rs",
+      "before": "b8b35657bcf232f484ab4f32fb3f7f45d303cc786b7a7559c189b32e69b3a2f0",
+      "after": "fe66f4c359a72e0d54a0083694e54bd5a3d5bae28e2cb6c5d2a069bc18fccb2b"
+    },
+    {
+      "path": "helper/src/grab.rs",
+      "before": "a88cab3ca604a48fa7adc7ffb2487dfadaf9d0b9c7579f98bcfc46bad5ab1e57",
+      "after": "03e07198d7679ac26440a357ec97fb5ebc61aa40aaafafa3e4e885958cd58d28"
+    },
+    {
+      "path": "helper/src/handles.rs",
+      "before": "78f9df0b83bad975e31c26ccaa94276ecc25af0b4feffae8d3291fbd8e1b853d",
+      "after": "c06b2107de656b13dd3ef9d6a5f6cbdcb5a3e8d9f8710b6b1bbc81ee9ce67b69"
+    },
+    {
+      "path": "helper/src/input.rs",
+      "before": "1bf42b300b16980f899605e044af13bb2d3151cf478379c36342b3db4f41de81",
+      "after": "db7581d035f232f62a52a568ca1d3ad51ac4da70d585831593d32ff45c88b9f7"
+    },
+    {
+      "path": "helper/src/input_executor.rs",
+      "before": null,
+      "after": "cf4d3f4556a7b441f5e28055d335eda1cf0144d4aba8cebcc0437cb3fe8eadae"
+    },
+    {
+      "path": "helper/src/input_executor_tests.rs",
+      "before": null,
+      "after": "45a7dbd0b023de61246fc3ce6e819457d4af38c8dabcfc299e1e1b27301fae86"
+    },
+    {
+      "path": "helper/src/input_guard.rs",
+      "before": null,
+      "after": "a4755e0740fdb50e591a744749ca46ebd10d89057131d89813d66c0f4e93b81c"
+    },
+    {
+      "path": "helper/src/keys.rs",
+      "before": "0bae50e8e116975fcafbf04715faaadb4cde10ac705c6667ca4f6c787edb2f93",
+      "after": "48d9aaccdaad14bbc2d94c1ef74927f286279cb94864d70d25ee61e5ee8ff94b"
+    },
+    {
+      "path": "helper/src/lib.rs",
+      "before": null,
+      "after": "3e915a839a742857df429fb230f45840e3d257ce3dc48db3ea2382bb2d2e6c51"
+    },
+    {
+      "path": "helper/src/main.rs",
+      "before": "479bf8a01602c88977453ddfa623850ece03acd110120230166572ad2f344807",
+      "after": "20ccd7ddb39c0f1c492611f74408010442b215a78fdcf84fb28b09159a59738b"
+    },
+    {
+      "path": "helper/src/native_macos_tests.rs",
+      "before": null,
+      "after": "4ba102e0a2877214d73f405297050b6fd0217dd8a60c9c8823154d185a95a6b5"
+    },
+    {
+      "path": "helper/src/native_wayland_modal.rs",
+      "before": null,
+      "after": "c6d59cb1030b2120f7028392e8b61507fa55d6010e05491d68fbd1cba5be94ae"
+    },
+    {
+      "path": "helper/src/native_wayland_teardown.rs",
+      "before": null,
+      "after": "a2491839445a9a44ebf28dcb5fa7287b00939a5f4a7b906f0947d2a054899445"
+    },
+    {
+      "path": "helper/src/native_wayland_tests.rs",
+      "before": null,
+      "after": "c64fda056101eeccdf6ed83d3c73dd475b535a7e69e86cfcd9bf81222942652c"
+    },
+    {
+      "path": "helper/src/native_x11_races.rs",
+      "before": null,
+      "after": "9366496bb659fe0e15d64707bb1e482e0bd7ce072b1aa58eef4c68dc394fc73f"
+    },
+    {
+      "path": "helper/src/native_x11_tests.rs",
+      "before": null,
+      "after": "fbbda163601cc4262e2cfe2b8ca730f27bd7213ded7dd4e83276864103561265"
+    },
+    {
+      "path": "helper/src/portable.rs",
+      "before": "dd8f1d1af3422960df4e6d41780479a168556f97ca1fe33e1f18bfd61aa89883",
+      "after": "3e4535c86f8fd98887ea6b6dd61aaef450341544baf9fcec6b57629967e76f7f"
+    },
+    {
+      "path": "helper/src/portable_action.rs",
+      "before": null,
+      "after": "fe1e1e716c50d3f00eab7be882195a8055eb27008f7a3122238121eed9dad1e5"
+    },
+    {
+      "path": "helper/src/portable_binding.rs",
+      "before": null,
+      "after": "d1958f1ab859754f82f49fa4ad6e54c1b34afb6a7b2fbe52ec0701d11b020a12"
+    },
+    {
+      "path": "helper/src/portable_contract.rs",
+      "before": null,
+      "after": "7dbccf3f1be8e7aa7fa9afd87715d215837c0733d904af7feb9a4863177428f4"
+    },
+    {
+      "path": "helper/src/portable_contract_tests.rs",
+      "before": null,
+      "after": "2eae4b218aabf055871c8249e5f42216368d804befb9e13f9485e2c5be144c16"
+    },
+    {
+      "path": "helper/src/portable_focus.rs",
+      "before": null,
+      "after": "3f28967b2ec574fb946b6503bac097b4cd225a41b367de080a656e8aba0a092d"
+    },
+    {
+      "path": "helper/src/portable_foreground.rs",
+      "before": null,
+      "after": "a13ceff9bc90a90215d3bff259291dba1edd563ee0692d93a914e39f120d52cb"
+    },
+    {
+      "path": "helper/src/portable_input.rs",
+      "before": null,
+      "after": "1e068de40a9628a493d9286a6a2e907176a28e9b0f19af963121a84121c9fd98"
+    },
+    {
+      "path": "helper/src/portable_macos.rs",
+      "before": null,
+      "after": "85315fec8ee815e1d88f16ce6cf275618f52a1102ecb93631749cb1598280725"
+    },
+    {
+      "path": "helper/src/portable_session_tests.rs",
+      "before": null,
+      "after": "e1ca49eb5a8dd504e2c7a69da54ba058ffe68f12480a670c39a4c94e2b288ba3"
+    },
+    {
+      "path": "helper/src/portable_x11.rs",
+      "before": null,
+      "after": "3ece68d4e77dfbed048a69364317aa10931798a75e531776ad77e1580ae9414a"
+    },
+    {
+      "path": "helper/src/protocol.rs",
+      "before": "2fa691fc4cc44f82edbcd9106986efc9666fd7d5c51d8b680cec53b382fb67d8",
+      "after": "54d4006ad499e3b0c3c6d63d6b32b511fe2a6c68d828c3cd41ff5e8b62d80acf"
+    },
+    {
+      "path": "helper/src/target_guard.rs",
+      "before": "02b5d31804cc19752c194e03b470f5042ff0d33a67aea58b5454e23a7aa7e08e",
+      "after": "98334b42c6b4366617eb14c3ace9fa93879b827d59b479e2fc2bb9c06ecc827a"
+    },
+    {
+      "path": "helper/src/uia.rs",
+      "before": "0c7891b02ef18f0a3bb504b90676c5b923004086c729b6a19ee6f1b1df8b759a",
+      "after": "90510cec99ddf8c04fd76aeb51f3db0dae55e007cea15320fc3dd7337eafec4d"
+    },
+    {
+      "path": "helper/src/wayland.rs",
+      "before": null,
+      "after": "acd0b43ae2cbc19c920153c8fafc70f20f64a5d56cc73586efbe39d0e854f7a6"
+    },
+    {
+      "path": "helper/src/wayland_contract.rs",
+      "before": null,
+      "after": "6d7c269ef125c93d86a7c810bd639d5adb19ad8f41d5f540e35977ac9fa20a5b"
+    },
+    {
+      "path": "helper/src/wayland_input.rs",
+      "before": null,
+      "after": "727776049e6fb6049b2a0b7710510c0efa8af1cb297718162f7ffc08aafa3fae"
+    },
+    {
+      "path": "helper/src/wayland_peer.rs",
+      "before": null,
+      "after": "7e22b096ad2189f844fc024c793c22243ed0d5bc0d1518b09556dafeafcbb078"
+    },
+    {
+      "path": "helper/src/window_host.rs",
+      "before": "aa0205b29f452530699fbe0ba3cafb4e8b91a253ba6fbc1635e9065ec8c924e3",
+      "after": "77ab0d029f47a01f06a7d299378e1faca9a8a4ffc10994a0db7b4cff7cbd4dab"
+    },
+    {
+      "path": "helper/src/windows.rs",
+      "before": "38d0b1e0bf59aa247cd2a7756611da2f4f9330bad47e0e7351ada71e885b6e81",
+      "after": "77572a120d85789ca66588dc8b0d1bbc08391c32d4e0d64f717b44cc5886311c"
+    },
+    {
+      "path": "helper/tests/fixtures/PortableMacFixture.swift",
+      "before": null,
+      "after": "0a25611cdfce1835442f2a59afe42d89bae15fc38b957fc3269117be4d86d503"
+    },
+    {
+      "path": "helper/tests/fixtures/gnome_control.js",
+      "before": null,
+      "after": "2f74caa94b1d062dafaab30b00c4759e155137e6cbadd52ed6ffa18d1d884cd2"
+    },
+    {
+      "path": "helper/tests/fixtures/portable_gtk_fixture.py",
+      "before": null,
+      "after": "da8da35c0e30a113ea206504bab92108e27254a5cf7d4d3bb89a1d4ccefb37cc"
+    },
+    {
+      "path": "helper/tests/fixtures/portable_wayland_fixture.py",
+      "before": null,
+      "after": "9610ae13ca085fa9ecbc1e1f0b8d2027f44d32ae29a20f0af94b4b7bafdf71c8"
+    },
+    {
+      "path": "helper/tests/library_contract.rs",
+      "before": null,
+      "after": "4c970df089167e247d8d80db7e0f7ad3d7b8a1b3d5c4561607bd023de8619ab5"
+    },
+    {
+      "path": "helper/tests/macos-build.test.mjs",
+      "before": null,
+      "after": "6a132094d3d76697d6816304e7bf002a0567b4a154d286b6c07adc3393f406b9"
+    },
+    {
+      "path": "helper/tests/run-wayland-gnome.sh",
+      "before": null,
+      "after": "d706a0a188a89d4290f8fc4844db87992b2d56ae34f3bd49c0ca600eb36493d6"
+    },
+    {
+      "path": "helper/tests/run-wayland-kde.sh",
+      "before": null,
+      "after": "05d9f6484cd24b4bb888cd1e24ce830993e34108a5ae19d1748449c2736f053a"
+    },
+    {
+      "path": "helper/wayland/gnome/extension.js",
+      "before": null,
+      "after": "0d6e5d5df0661d6ea12715e298c0f07645e13a03d5fab053ee9ab57b179a53e8"
+    },
+    {
+      "path": "helper/wayland/gnome/metadata.json",
+      "before": null,
+      "after": "8d4bc7eeb18baa510ebb2e2315861882dde0921cc25e8d576d3ccbacf2bcd43d"
+    },
+    {
+      "path": "helper/wayland/gnome/pixels.js",
+      "before": null,
+      "after": "1fd24dbb75e80d63f452176a94a4b25eab0fc4cfb884846e43283850911348ba"
+    },
+    {
+      "path": "helper/wayland/gnome/policy.js",
+      "before": null,
+      "after": "3a1d1594a3f484457ecd35dd92c1cd0c955327b4f8d9c59bd80ab1c0b80b171e"
+    },
+    {
+      "path": "helper/wayland/gnome/policy.test.mjs",
+      "before": null,
+      "after": "128ac0bcf178f2cea97e045d05b141e4753ccf719a6aab61c1cb253801e180f7"
+    },
+    {
+      "path": "helper/wayland/kde/CMakeLists.txt",
+      "before": null,
+      "after": "3c7b0d2d619a40e0645cce9e246050c4f00f5311fee9b2df245dab9e527eda1f"
+    },
+    {
+      "path": "helper/wayland/kde/README.md",
+      "before": null,
+      "after": "d179246f6c4d7b638e81af779a57c8f77eac48eebc2604d630899f04b88f8ea3"
+    },
+    {
+      "path": "helper/wayland/kde/bridge.cpp",
+      "before": null,
+      "after": "d6779ba4006e1d9fb86f861c7ff9a5eea056e0160bea7e8574dd7998d51d65eb"
+    },
+    {
+      "path": "helper/wayland/kde/bridge.h",
+      "before": null,
+      "after": "c75e59a0169cacd2ce8c6d61d4d591a802641a34522e2e6cb65a001c81aa3ccf"
+    },
+    {
+      "path": "helper/wayland/kde/device.cpp",
+      "before": null,
+      "after": "590980049b829282d37b96f9d77c51b1d69547676a07849cad5d3ebf8150e0a7"
+    },
+    {
+      "path": "helper/wayland/kde/device.h",
+      "before": null,
+      "after": "6a7cd2ece5e96e7e931e49262b7f0ac9956af412677269e3b0d3eda883c1e504"
+    },
+    {
+      "path": "helper/wayland/kde/grant_store.h",
+      "before": null,
+      "after": "329affb34cd9b155abbef753f6d8d69e261e58f4df043dadf023733853496735"
+    },
+    {
+      "path": "helper/wayland/kde/metadata.json",
+      "before": null,
+      "after": "7bc131a62b788731f43feb4fd9e2b6e89e0199eb77e6b3b7d0d4bdacc3cf4449"
+    },
+    {
+      "path": "helper/wayland/kde/pixels.cpp",
+      "before": null,
+      "after": "a951e840884b23549f8cb262b12b512323accf15cf2f894378848471b18b3a58"
+    },
+    {
+      "path": "helper/wayland/kde/pixels.h",
+      "before": null,
+      "after": "08e284d4c8844b2e116f543d264a77f6e0a7015ecade2ceab9cbaf9c4be20144"
+    },
+    {
+      "path": "helper/wayland/kde/policy.h",
+      "before": null,
+      "after": "378b4f78e36dc476b5a754d08ca695a97d758dde892cbfdd4509a3a8cba2fba6"
+    },
+    {
+      "path": "helper/wayland/kde/policy_test.cpp",
+      "before": null,
+      "after": "c54570fddee42c3e0d14111cceffc20d562d8b4bde568465c881e452c12f212a"
+    },
+    {
+      "path": "helper/wayland/package-companion.py",
+      "before": null,
+      "after": "445f543f763936ce213d882c986db0372daf1ee89f77f6886f514f3d358d072d"
+    }
+  ]
+}

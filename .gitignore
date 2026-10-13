@@ -1,0 +1,23 @@
+/target/
+*.swp
+.DS_Store
+/docs/superpowers/
+
+# Local agent notes and scratch evidence
+/.work-tracking/
+/current-work-*.md
+
+# Local caches and diagnostic output
+.cache/
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+Thumbs.db
+Desktop.ini
+
+# Generated release and coverage output
+/dist/
+/build/
+/artifacts/
+/coverage/

@@ -1,0 +1,25 @@
+[package]
+name = "desktop-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "aevra desktop_* MCP tools behind the allowlist gate, over stdio and loopback HTTP."
+
+[dependencies]
+desktop-core = { path = "../desktop-core" }
+desktop-policy = { path = "../desktop-policy" }
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+axum = { workspace = true, features = ["tokio", "http1", "json"] }
+subtle.workspace = true
+tokio-util = { workspace = true }
+rmcp = { workspace = true, features = ["server", "macros", "transport-io", "transport-streamable-http-server", "client"] }
+tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros", "sync", "time", "io-std", "net"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+rmcp = { workspace = true, features = ["server", "client", "transport-io", "transport-streamable-http-client-reqwest", "transport-streamable-http-server"] }
+tokio = { version = "=1.53.2", features = ["rt", "rt-multi-thread", "macros", "time"] }
