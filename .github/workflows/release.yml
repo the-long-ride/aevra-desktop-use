@@ -1,0 +1,231 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing versioned tag to build and release (for example v1.0.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve validated release target
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      release-tag: ${{ steps.target.outputs.release-tag }}
+      release-sha: ${{ steps.target.outputs.release-sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refs/tags/${{ inputs.tag || github.ref_name }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Validate tag and source version
+        id: target
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: node scripts/release-target.mjs
+
+  # The same matrix as CI: nothing is packaged from a tag that does not pass.
+  ci:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.resolve.outputs.release-sha }}
+    permissions:
+      contents: read
+
+  package:
+    name: package ${{ matrix.artifact }}
+    needs: [resolve, ci]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - {
+              os: windows-latest,
+              artifact: aevra-desktop-win32-x64,
+              kind: windows,
+            }
+          - {
+              os: windows-11-arm,
+              artifact: aevra-desktop-win32-arm64,
+              kind: windows,
+            }
+          - {
+              os: macos-latest,
+              artifact: aevra-desktop-darwin-arm64,
+              kind: macos,
+            }
+          - {
+              os: macos-15-intel,
+              artifact: aevra-desktop-darwin-x64,
+              kind: macos,
+            }
+          - { os: ubuntu-22.04, artifact: aevra-desktop-linux-x64, kind: linux }
+          - {
+              os: ubuntu-22.04-arm,
+              artifact: aevra-desktop-linux-arm64,
+              kind: linux,
+            }
+    env:
+      VERSION: ${{ needs.resolve.outputs.release-tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve.outputs.release-sha }}
+          submodules: recursive
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Prepare canonical helper source
+        run: node scripts/prepare-helper.mjs
+
+      - name: Select compatible macOS SDK
+        if: runner.os == 'macOS'
+        run: node vendor/aevra/helper/setup-macos.mjs
+
+      - name: Install Linux native prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libwayland-dev libxkbcommon-dev
+
+      - name: Check the tag matches the crate version
+        shell: bash
+        run: |
+          version="${VERSION#v}"
+          crate="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n 1)"
+          base="${version%%[-+]*}"
+          if [ "$base" != "$crate" ]; then
+            echo "::error::tag $VERSION does not match Cargo.toml version $crate"
+            exit 1
+          fi
+
+      - name: Install Rust
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Package (Windows)
+        if: matrix.kind == 'windows'
+        shell: pwsh
+        run: |
+          $dir = "dist/${{ matrix.artifact }}"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item target/release/aevra-desktop.exe $dir
+          Copy-Item LICENSE $dir
+          Copy-Item README.md $dir
+          Compress-Archive -Path "$dir/*" -DestinationPath "dist/${{ matrix.artifact }}.zip"
+          Remove-Item -Recurse -Force $dir
+
+      - name: Package (macOS)
+        if: matrix.kind == 'macos'
+        shell: bash
+        run: |
+          app="dist/aevra-desktop.app"
+          mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
+          cp target/release/aevra-desktop "$app/Contents/MacOS/aevra-desktop"
+          cp LICENSE "$app/Contents/Resources/LICENSE"
+          sed "s/__VERSION__/${VERSION#v}/g" packaging/macos/Info.plist > "$app/Contents/Info.plist"
+          cp packaging/icons/aevra-desktop.icns "$app/Contents/Resources/aevra-desktop.icns"
+          plutil -lint "$app/Contents/Info.plist"
+          # Ad-hoc signature: there is no Developer ID, so Gatekeeper still asks
+          # on first launch (see the README), but the bundle is internally
+          # consistent and the Accessibility grant sticks to it.
+          codesign --force --deep --sign - "$app"
+          codesign --verify --deep --strict "$app"
+          ditto -c -k --keepParent "$app" "dist/${{ matrix.artifact }}.zip"
+          rm -rf "$app"
+
+      - name: Package (Linux)
+        if: matrix.kind == 'linux'
+        shell: bash
+        run: |
+          dir="dist/${{ matrix.artifact }}"
+          mkdir -p "$dir"
+          cp target/release/aevra-desktop "$dir/"
+          python3 vendor/aevra/helper/wayland/package-companion.py "$dir"
+          cp packaging/linux/aevra-desktop.desktop "$dir/"
+          cp packaging/icons/aevra-desktop-256.png "$dir/aevra-desktop.png"
+          cp LICENSE README.md "$dir/"
+          tar -C dist -czf "dist/${{ matrix.artifact }}.tar.gz" "${{ matrix.artifact }}"
+          rm -rf "$dir"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: publish release
+    needs: [resolve, package]
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.resolve.outputs.release-tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve.outputs.release-sha }}
+
+      - uses: actions/download-artifact@v6
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Write checksums
+        working-directory: dist
+        run: |
+          for f in *.zip *.tar.gz; do
+            sha256sum "$f" > "$f.sha256"
+          done
+          ls -l
+
+      - name: Release notes from the changelog
+        run: |
+          version="${TAG#v}"
+          # The section whose heading starts with "## [<version>]", up to the next "## [".
+          awk -v v="$version" '
+            index($0, "## [" v "]") == 1 { grab = 1; next }
+            grab && /^## \[/ { exit }
+            grab { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no section for $version"
+            exit 1
+          fi
+          cat notes.md
+
+      - name: Create the GitHub release
+        run: |
+          flags=()
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          gh release create "$TAG" dist/* \
+            --title "aevra-desktop $TAG" \
+            --notes-file notes.md \
+            --verify-tag \
+            "${flags[@]}"

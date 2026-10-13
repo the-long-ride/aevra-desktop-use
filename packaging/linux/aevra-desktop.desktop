@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=aevra-desktop
+GenericName=Desktop control for MCP clients
+Comment=Let MCP clients drive the desktop apps you allow
+Exec=aevra-desktop
+Icon=aevra-desktop
+Terminal=false
+Categories=Utility;Accessibility;
+StartupNotify=false

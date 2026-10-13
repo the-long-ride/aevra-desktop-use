@@ -1,0 +1,16 @@
+[package]
+name = "desktop-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "aevra desktop helper backends compiled in-process, driven through a backend actor."
+
+[dependencies]
+aevra-desktop-helper = { path = "../../vendor/aevra/helper" }
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+tokio = { version = "=1.53.2", default-features = false, features = ["sync"] }
+
+[dev-dependencies]
+tokio = { version = "=1.53.2", features = ["rt", "rt-multi-thread", "macros", "time"] }
