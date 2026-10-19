@@ -134,7 +134,9 @@ pub fn signal_existing(dir: &Path) -> std::io::Result<()> {
                     if response.trim() == "ok" {
                         return Ok(());
                     }
-                    return Err(std::io::Error::other("running instance did not acknowledge show"));
+                    return Err(std::io::Error::other(
+                        "running instance did not acknowledge show",
+                    ));
                 }
                 Err(e) => last = e,
             }
