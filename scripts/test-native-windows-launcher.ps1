@@ -122,3 +122,6 @@ exit 17
     if ([IO.Path]::GetDirectoryName($resolved) -ne [IO.Path]::GetTempPath().TrimEnd('\', '/')) { throw 'Unsafe scratch cleanup target' }
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
+# An intentional child failure sets LASTEXITCODE to 17. All assertions passed,
+# and cleanup succeeded, so explicitly report success to the PowerShell host.
+exit 0
