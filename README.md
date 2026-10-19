@@ -1,6 +1,6 @@
 # aevra-desktop
 
-Current source release: **1.0.0**.
+Current source release: **1.1.0**.
 
 A native desktop-control MCP server. It runs the desktop backends from
 [aevra](https://github.com/the-long-ride/aevra) in-process and exposes the `desktop_*` tools to
@@ -43,11 +43,16 @@ Choose Desktop for an application-focused setup. Choose the gateway for coordina
 
 ## Recent changes in current source
 
+Version **1.1.0** adds a custom GUI HTTP startup port with `--port` / `--p`.
+See the [startup-port specification](docs/specs/2026-10-19-custom-startup-port.md)
+and [1.1.0 changelog](CHANGELOG.md#110---2026-10-19) for its invocation-only scope,
+Settings behavior and existing-instance recovery.
+
 The native UI now groups controls with clearer borders and spacing, uses Aevra's canonical logo, and provides a responsive Activity toolbar plus author/source links. Foreground capture/input adapters cover Windows, macOS 13+, Ubuntu X11, GNOME Wayland and KDE KWin 6.6; consult the [platform table](#tools-and-platform-support) for runtime prerequisites and acceptance limits.
 
 Window reads carry the original authorized identity and recheck the current allowlist before returning data. Disconnect/reconnect invalidates session generations, pending connect/read completions and stale refs/mappings. GNOME refuses Shell-owned keyboard input and handles decorated frame/buffer geometry; KDE wheel input accepts fractional native pointer positions.
 
-These changes are recorded under [Unreleased](CHANGELOG.md#unreleased), with source version **1.0.0**. Native macOS, physical-GPU capture and production Wayland approval/lock acceptance remain open. The browser project's pinned drivers are released independently.
+The additional native/UI work above remains recorded under [Unreleased](CHANGELOG.md#unreleased), with current source version **1.1.0**. Native macOS, physical-GPU capture and production Wayland approval/lock acceptance remain open. The browser project's pinned drivers are released independently.
 
 ## Install
 
@@ -96,6 +101,19 @@ accessibility is enabled for the session. The tray uses the StatusNotifierItem D
 still opens, and `aevra-desktop mcp` never needs either.
 
 ## Allow apps
+
+To choose the GUI's loopback HTTP port for one launch, run
+`aevra-desktop --port=48900` (or `--p=48900`, `--port 48900`, `--p 48900`).
+The value must contain only digits and be between 1 and 65535; pass the port
+option only once. Enable HTTP in Settings to start listening. The selected port
+appears in Settings and its HTTP client snippet, survives configuration reloads,
+and stays separate from the saved port when you save other settings. While an
+override is active, the saved port field is read-only. Quit a running GUI from
+the tray before relaunching with a port option; an existing GUI cannot adopt it.
+The window wake-up socket still chooses its own free port. The `mcp` command
+uses stdio and does not accept a port option.
+See the [implemented startup-port specification](docs/specs/2026-10-19-custom-startup-port.md)
+for exact validation, defaults and reload behavior.
 
 Run `aevra-desktop`. The native window follows Aevra web UI colors, monospace typography,
 and compact controls. Use **Light theme** / **Dark theme** in the header to switch appearance.

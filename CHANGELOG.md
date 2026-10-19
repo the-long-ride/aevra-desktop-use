@@ -45,6 +45,15 @@
 - Carry the same canonical helper into standalone desktop using a reproducible, hash-checked overlay, including clean CI/release preparation, independent capture/input readiness and permission recovery guidance.
 - Support Ubuntu X11 plus native GNOME Wayland and KDE KWin 6.6 companions. GNOME/KDE private-compositor acceptance runs in both consumers; native macOS, physical-GPU/OpenGL capture, actual lock-screen transitions and production grant workflows remain separate acceptance gates. Other Wayland compositors remain roadmap work.
 
+## [1.1.0] - 2026-10-19
+
+### Added
+
+- Choose the GUI's loopback HTTP port for one invocation with `--port=PORT`, `--p=PORT`, `--port PORT` or `--p PORT`. Accept digits-only values from 1 to 65535 and reject missing, invalid or duplicate options before startup.
+- Preserve the HTTP enable switch while keeping the effective listener, Settings port display and copied HTTP client URL consistent through reloads. Keep the CLI override separate from saved settings and leave the window wake-up socket on its own OS-assigned port.
+- Report an actionable error when a GUI is already running: quit it from the tray, then relaunch with the requested port. The stdio `mcp` command continues without an HTTP listener or port option.
+- Document the implemented behavior and verification scope in the [startup-port specification](docs/specs/2026-10-19-custom-startup-port.md).
+
 ## [1.0.0] - 2026-10-15
 
 ### Added - Desktop management

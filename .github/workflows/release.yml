@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing versioned tag to build and release (for example v1.0.0)
+        description: Existing versioned tag to build and release (for example v1.1.0)
         required: true
         type: string
 
