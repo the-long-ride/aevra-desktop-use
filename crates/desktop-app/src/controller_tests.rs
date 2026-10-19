@@ -156,8 +156,10 @@ fn startup_override_survives_config_changes_without_changing_saved_settings() {
         HttpManager::with_port_override(Arc::clone(&server), runtime.handle().clone(), Some(port));
     drop(selected);
     let path = dir.path().join("config.json");
-    let mut saved = Config::default();
-    saved.http = http(47901, "first-test-token");
+    let mut saved = Config {
+        http: http(47901, "first-test-token"),
+        ..Config::default()
+    };
     desktop_policy::config::save(&path, &saved).unwrap();
     apply(&server, &manager, runtime.handle(), saved.clone());
     let expected = SocketAddr::from(([127, 0, 0, 1], port));

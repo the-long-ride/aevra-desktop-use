@@ -43,13 +43,15 @@ impl Instance {
         self.listener = Some(std::thread::spawn(move || {
             while !stop.load(Ordering::SeqCst) {
                 match listener.accept() {
-                    Ok((stream, _)) => {
+                    Ok((mut stream, _)) => {
                         let _ = stream.set_read_timeout(Some(Duration::from_secs(1)));
                         let mut line = String::new();
-                        if BufReader::new(stream).read_line(&mut line).is_ok()
+                        if BufReader::new(&mut stream).read_line(&mut line).is_ok()
                             && line.trim() == SHOW
                         {
                             on_show();
+                            // Confirm the callback ran before the later instance exits.
+                            let _ = stream.write_all(b"ok\n");
                         }
                     }
                     Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -126,7 +128,15 @@ pub fn signal_existing(dir: &Path) -> std::io::Result<()> {
             match TcpStream::connect_timeout(&addr, Duration::from_millis(500)) {
                 Ok(mut stream) => {
                     stream.write_all(format!("{SHOW}\n").as_bytes())?;
-                    return Ok(());
+                    stream.set_read_timeout(Some(Duration::from_secs(2)))?;
+                    let mut response = String::new();
+                    BufReader::new(&mut stream).read_line(&mut response)?;
+                    if response.trim() == "ok" {
+                        return Ok(());
+                    }
+                    return Err(std::io::Error::other(
+                        "running instance did not acknowledge show",
+                    ));
                 }
                 Err(e) => last = e,
             }
@@ -181,12 +191,7 @@ mod tests {
         ));
         signal_existing(dir.path()).unwrap();
         signal_existing(dir.path()).unwrap();
-        for _ in 0..100 {
-            if shown.load(Ordering::SeqCst) == 2 {
-                break;
-            }
-            std::thread::sleep(Duration::from_millis(20));
-        }
+        // Each signal now waits for an acknowledgement after the callback.
         assert_eq!(shown.load(Ordering::SeqCst), 2);
         drop(instance);
     }

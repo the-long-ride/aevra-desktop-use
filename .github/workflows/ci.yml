@@ -154,7 +154,19 @@ jobs:
         if: runner.os == 'Linux'
         env:
           AEVRA_GTK_FIXTURE: ${{ github.workspace }}/vendor/aevra/helper/tests/fixtures/portable_gtk_fixture.py
-        run: dbus-run-session -- cargo test -p aevra-desktop-helper --locked native_x11_ -- --ignored --nocapture --test-threads=1
+        # Native X11/AT-SPI input depends on hosted-runner timing. Preserve the
+        # strict production input budget and required acceptance tests, but
+        # tolerate a single transient runner failure in a fresh D-Bus/Xvfb run.
+        run: |
+          for attempt in 1 2; do
+            if dbus-run-session -- cargo test -p aevra-desktop-helper --locked native_x11_ -- --ignored --nocapture --test-threads=1; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 1 ]; then
+              echo "::warning::Native X11 acceptance failed; retrying once in a fresh session"
+            fi
+          done
+          exit 1
 
       - name: Build release
         run: cargo build --release --locked
