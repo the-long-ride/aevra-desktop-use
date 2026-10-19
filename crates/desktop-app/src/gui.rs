@@ -69,19 +69,27 @@ fn needs_token_saved(path: &Path) -> bool {
 }
 
 pub fn run() -> Result<(), String> {
+    run_with_port(None)
+}
+
+pub fn run_with_port(port: Option<u16>) -> Result<(), String> {
     let dir = native_config_dir();
     let path = config_file(&dir);
 
-    let mut instance =
-        match acquire(&dir).map_err(|e| format!("could not take the UI lock: {e}"))? {
-            Acquired::AlreadyRunning => {
-                if let Err(e) = signal_existing(&dir) {
-                    eprintln!("aevra-desktop: it is already running, but it did not answer: {e}");
-                }
-                return Ok(());
+    let mut instance = match acquire(&dir)
+        .map_err(|e| format!("could not take the UI lock: {e}"))?
+    {
+        Acquired::AlreadyRunning => {
+            if let Some(port) = port {
+                return Err(format!("the GUI is already running; quit it from the tray, then relaunch with --port={port} to apply the HTTP port"));
             }
-            Acquired::First(instance) => instance,
-        };
+            if let Err(e) = signal_existing(&dir) {
+                eprintln!("aevra-desktop: it is already running, but it did not answer: {e}");
+            }
+            return Ok(());
+        }
+        Acquired::First(instance) => instance,
+    };
     let listener =
         bind_listener(&dir).map_err(|e| format!("could not open the wake-up socket: {e}"))?;
 
@@ -105,11 +113,12 @@ pub fn run() -> Result<(), String> {
         ActivityLog::new(&dir),
         Arc::clone(&catalog) as Arc<dyn AppCatalog>,
     ));
-    let http = Arc::new(HttpManager::new(
+    let http = Arc::new(HttpManager::with_port_override(
         Arc::clone(&server),
         runtime.handle().clone(),
+        port,
     ));
-    http.reconcile(&loaded.config.http);
+    controller::apply(&server, &http, runtime.handle(), loaded.config.clone());
 
     // Edits to the file, from the window or elsewhere, reach the server here.
     let _watcher = {

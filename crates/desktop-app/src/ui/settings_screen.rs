@@ -38,13 +38,13 @@ impl GuiApp {
         }
         ui.horizontal_wrapped(|ui| {
             ui.label("Port");
-            ui.add(
+            ui.add_enabled(self.services.http.port_override().is_none(),
                 egui::TextEdit::singleline(&mut self.port_text)
                     .desired_width(70.0)
                     .min_size(egui::vec2(0.0, 32.0)),
             );
             if ui
-                .add_enabled(self.problem.is_none(), egui::Button::new("Apply port"))
+                .add_enabled(self.problem.is_none() && self.services.http.port_override().is_none(), egui::Button::new("Apply port"))
                 .clicked()
             {
                 match settings::parse_port(&self.port_text) {
@@ -57,6 +57,9 @@ impl GuiApp {
                 }
             }
         });
+        if let Some(port) = self.services.http.port_override() {
+            ui.label(format!("Port {port} is set for this launch. Quit and relaunch without --port to edit the saved port ({}).", self.config.http.port));
+        }
         let status = match self.services.http.status() {
             HttpStatus::Stopped => "Stopped".to_string(),
             HttpStatus::Running(addr) => format!("Listening on http://{addr}/mcp"),
@@ -114,7 +117,7 @@ impl GuiApp {
         ui.separator();
         ui.add_space(12.0);
         let http = self.config.http.clone();
-        self.snippet(ui, "HTTP", settings::http_snippet(http.port, &http.token));
+        self.snippet(ui, "HTTP", settings::http_snippet(self.services.http.effective_port(http.port), &http.token));
         ui.label(egui::RichText::new("The HTTP snippet contains your token. Paste it into the client, not into chat or a repository.").small().weak());
         });
         ui.add_space(16.0);

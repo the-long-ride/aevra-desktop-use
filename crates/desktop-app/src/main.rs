@@ -35,7 +35,7 @@ fn main() -> ExitCode {
             Ok(())
         }
         Command::Mcp => mcp_stdio::run(),
-        Command::Run => gui::run(),
+        Command::Run { port } => gui::run_with_port(port),
     };
     match outcome {
         Ok(()) => ExitCode::SUCCESS,

@@ -100,7 +100,10 @@ impl GuiApp {
     ) -> Self {
         theme::install(&cc.egui_ctx);
         let app = Self {
-            port_text: loaded.config.http.port.to_string(),
+            port_text: services
+                .http
+                .effective_port(loaded.config.http.port)
+                .to_string(),
             config: loaded.config,
             problem: loaded.problem,
             services,
@@ -185,7 +188,11 @@ impl GuiApp {
                     if let Some(tray) = &self.tray {
                         tray.set_http_enabled(config.http.enabled);
                     }
-                    self.port_text = config.http.port.to_string();
+                    self.port_text = self
+                        .services
+                        .http
+                        .effective_port(config.http.port)
+                        .to_string();
                     self.config = config;
                 }
             }

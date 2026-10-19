@@ -1,9 +1,11 @@
-//! Command line parsing. Hand-rolled: there are four commands and two flags.
+//! Command line parsing for GUI startup and the stdio/diagnostic commands.
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
-    /// No arguments: tray icon and allowlist window.
-    Run,
+    /// Tray icon and allowlist window, with an invocation-only HTTP port.
+    Run {
+        port: Option<u16>,
+    },
     /// Serve MCP over stdio, hot-reloading the allowlist.
     Mcp,
     Doctor {
@@ -17,11 +19,18 @@ pub const USAGE: &str = "\
 aevra-desktop: let MCP clients drive the desktop apps you allow.
 
 USAGE:
-    aevra-desktop                  open the tray icon and the allowlist window
+    aevra-desktop [--port PORT]    open the tray icon and the allowlist window
     aevra-desktop mcp              serve MCP over stdio (for MCP clients to launch)
     aevra-desktop doctor [--json]  check the platform, config and HTTP port
     aevra-desktop --version
     aevra-desktop --help
+
+GUI STARTUP OPTIONS:
+    --port PORT, --p PORT          HTTP listener port, digits only, 1..65535
+    --port=PORT, --p=PORT          equivalent forms; only one port option allowed
+    The override lasts for this invocation and HTTP must still be enabled in
+    Settings. Quit any running GUI first. The wake-up socket stays automatic.
+    The stdio mcp command does not bind HTTP and accepts no port option.
 
 GNOME WAYLAND:
     Install the bundled aevra-desktop@the-long-ride.shell-extension.zip with
@@ -55,7 +64,7 @@ where
     let args: Vec<String> = args.into_iter().map(|a| a.as_ref().to_string()).collect();
     let mut words = args.iter().map(String::as_str);
     let Some(first) = words.next() else {
-        return Ok(Command::Run);
+        return Ok(Command::Run { port: None });
     };
     let rest: Vec<&str> = words.collect();
     let no_extra = |command: Command| {
@@ -69,6 +78,10 @@ where
         }
     };
     match first {
+        "--port" | "--p" => parse_startup_port(&args),
+        value if value.starts_with("--port=") || value.starts_with("--p=") => {
+            parse_startup_port(&args)
+        }
         "mcp" => no_extra(Command::Mcp),
         "doctor" => match rest.as_slice() {
             [] => Ok(Command::Doctor { json: false }),
@@ -84,13 +97,84 @@ where
     }
 }
 
+fn parse_startup_port(args: &[String]) -> Result<Command, CliError> {
+    let (flag, inline) = args[0]
+        .split_once('=')
+        .map_or((args[0].as_str(), None), |(flag, value)| {
+            (flag, Some(value))
+        });
+    let value = inline.or_else(|| args.get(1).map(String::as_str));
+    let Some(value) = value else {
+        return Err(CliError(format!("{flag} requires a port number")));
+    };
+    if args.len() != if inline.is_some() { 1 } else { 2 } {
+        return Err(CliError(
+            "only one startup port option is allowed; remove duplicate options or extra arguments"
+                .into(),
+        ));
+    }
+    let port = value
+        .parse::<u16>()
+        .ok()
+        .filter(|port| *port != 0)
+        .filter(|_| !value.is_empty() && value.bytes().all(|b| b.is_ascii_digit()))
+        .ok_or_else(|| CliError(format!("{flag} must be digits only, between 1 and 65535")))?;
+    Ok(Command::Run { port: Some(port) })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn no_arguments_start_the_tray() {
-        assert_eq!(parse(Vec::<String>::new()), Ok(Command::Run));
+        assert_eq!(parse(Vec::<String>::new()), Ok(Command::Run { port: None }));
+    }
+
+    #[test]
+    fn gui_accepts_both_port_aliases_with_equals_or_separate_values() {
+        for (args, port) in [
+            (vec!["--port=1"], 1),
+            (vec!["--p=65535"], 65535),
+            (vec!["--port", "48900"], 48900),
+            (vec!["--p", "0048900"], 48900),
+        ] {
+            assert_eq!(
+                parse(&args),
+                Ok(Command::Run { port: Some(port) }),
+                "{args:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn invalid_ports_and_duplicate_aliases_are_rejected() {
+        for value in [
+            "",
+            "zero",
+            "1.5",
+            "-1",
+            "0",
+            "65536",
+            "99999999999999999999",
+            "+1",
+            " 1",
+            "1 ",
+        ] {
+            assert!(parse([format!("--port={value}")]).is_err(), "{value:?}");
+            assert!(parse(["--p", value]).is_err(), "{value:?}");
+        }
+        for args in [
+            vec!["--port"],
+            vec!["--p"],
+            vec!["--port=48900", "--port=48901"],
+            vec!["--p", "48900", "--port=48900"],
+            vec!["--p=48900", "--port", "48901"],
+            vec!["mcp", "--port=48900"],
+            vec!["doctor", "--p=48900"],
+        ] {
+            assert!(parse(&args).is_err(), "{args:?}");
+        }
     }
 
     #[test]
